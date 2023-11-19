@@ -4,41 +4,33 @@ import sys
 pygame.init()
 
 # Constantes
-LARGURA, ALTURA = 600, 600  # Dobrando o tamanho da tela
-ESPACO = 200  # Ajustando o tamanho do espaço entre as linhas
-FUND0_COR = (230, 232, 250)  # Cor de fundo
-LINHA_COR = (0, 0, 0)  # Cor das linhas do tabuleiro
-STATUS_FONTE = pygame.font.Font(None, 30)  # Fonte para o status do jogo
-VITORIA_FONTE = pygame.font.Font(None, 60)  # Fonte para a mensagem de vitória
+LARGURA, ALTURA = 600, 600
+ESPACO = 200
+FUND0_COR = (230, 232, 250)
+LINHA_COR = (0, 0, 0)
+STATUS_FONTE = pygame.font.Font(None, 30)
+VITORIA_FONTE = pygame.font.Font(None, 60)
 
-# Carregue aqui a imagem de fundo do tabuleiro
-fundo_tabuleiro = pygame.image.load('img/fundo_tabuleiro.png')  # Substitua pelo caminho da imagem
+# Carregando imagens e sons
+fundo_tabuleiro = pygame.image.load('files/fundo_tabuleiro.png')
 fundo_tabuleiro = pygame.transform.scale(fundo_tabuleiro, (LARGURA, ALTURA))
-
-# Carregando imagens dos personagens da Disney
-mickey_image = pygame.image.load('img/minnie.png')  # Substitua 'mickey.png' pelo caminho para a imagem do Mickey Mouse
-minnie_image = pygame.image.load('img/mickey.png')  # Substitua 'minnie.png' pelo caminho para a imagem da Minnie Mouse
-
-# Redimensionando imagens para o tamanho do espaço no tabuleiro
+mickey_image = pygame.image.load('files/minnie.png')
+minnie_image = pygame.image.load('files/mickey.png')
 mickey_image = pygame.transform.scale(mickey_image, (ESPACO, ESPACO))
 minnie_image = pygame.transform.scale(minnie_image, (ESPACO, ESPACO))
-
-# Sons
-clique_som = pygame.mixer.Sound('img/clique.wav')  # Substitua 'clique.wav' pelo caminho para o efeito sonoro de clique
-vitoria_som = pygame.mixer.Sound('img/vitoria.mp3')  # Substitua 'vitoria.wav' pelo caminho para o efeito sonoro de vitória
+clique_som = pygame.mixer.Sound('files/clique.wav')
+vitoria_som = pygame.mixer.Sound('files/vitoria.mp3')
 
 # Inicialização da Tela
 tela = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption('Jogo da Velha - Disney')
 tela.fill(FUND0_COR)
 
-# Tabuleiro (matriz 3x3) e vez do jogador
+# Estado inicial do jogo
 tabuleiro = [["" for _ in range(3)] for _ in range(3)]
-vez_do_jogador = True  # True para jogador Mickey Mouse, False para Minnie Mouse
+vez_do_jogador = True
 jogo_rodando = True
 vencedor = None
-
-# Pontuação dos jogadores
 pontuacao_mickey = 0
 pontuacao_minnie = 0
 
@@ -134,12 +126,11 @@ def reiniciar():
 def obter_nome_jogador():
     tela.fill(FUND0_COR)
     fonte = pygame.font.Font(None, 36)
-    input_box = pygame.Rect(50, 100, 200, 50)
+    input_box = pygame.Rect(50, 150, 200, 50)
     cor_fundo = pygame.Color('white')
     cor_texto = pygame.Color('black')
+    prompt_texto = fonte.render('Digite seu nome e pressione Enter', True, cor_texto)
     nome = ""
-    texto = ""
-
     ativo = False
 
     while True:
@@ -163,24 +154,54 @@ def obter_nome_jogador():
                         nome += event.unicode
 
         tela.fill(FUND0_COR)
+        tela.blit(prompt_texto, (50, 100))
         input_text = fonte.render(nome, True, cor_texto)
-        largura = max(200, input_text.get_width()+10)
+        largura = max(200, input_text.get_width() + 10)
         input_box.w = largura
-        tela.blit(input_text, (input_box.x+5, input_box.y+5))
+        tela.blit(input_text, (input_box.x + 5, input_box.y + 5))
         pygame.draw.rect(tela, cor_fundo, input_box, 2)
+
         pygame.display.flip()
 
 # Obter nomes dos jogadores
 nome_jogador = obter_nome_jogador()
-nome_ia = "Seu Zé"
+nome_ia = "Mickey Mouse"
+
+# Função para desenhar botões
+def desenhar_botao(texto, rect, cor_fundo, cor_texto):
+    pygame.draw.rect(tela, cor_fundo, rect)
+    texto_surface = STATUS_FONTE.render(texto, True, cor_texto)
+    tela.blit(texto_surface, (rect.x + (rect.width - texto_surface.get_width()) / 2, rect.y + (rect.height - texto_surface.get_height()) / 2))
+
+def botao_clicado(rect):
+    posicao_mouse = pygame.mouse.get_pos()
+    return rect.collidepoint(posicao_mouse)
+
 # Função para adicionar botões gráficos
 def adicionar_botoes():
-    # Implemente botões gráficos para reiniciar, sair, regras, etc.
-    pass
+    reiniciar_botao = pygame.Rect(50, ALTURA - 70, 100, 50)
+    sair_botao = pygame.Rect(LARGURA - 150, ALTURA - 70, 100, 50)
+    
+    desenhar_botao('Reiniciar', reiniciar_botao, (0, 255, 0), (255, 255, 255))
+    desenhar_botao('Sair', sair_botao, (255, 0, 0), (255, 255, 255))
 
-# Loop principal
+    posicao_mouse = pygame.mouse.get_pos()
+    if pygame.mouse.get_pressed()[0]:  # Verifica se o botão esquerdo do mouse foi pressionado
+        if reiniciar_botao.collidepoint(posicao_mouse):
+            reiniciar()
+        elif sair_botao.collidepoint(posicao_mouse):
+            pygame.quit()
+            sys.exit()
+
+# função para mostrar o placar
+def mostrar_placar():
+    placar_texto = STATUS_FONTE.render(f'Placar - {nome_jogador}: {pontuacao_mickey} | {nome_ia}: {pontuacao_minnie}', True, (0, 0, 0))
+    tela.blit(placar_texto, (10, 10))
+
+# loop principal que exibe de quem é a vez
 while True:
-    desenhar_tabuleiro()  # Certifique-se de que esta é a única chamada para desenhar_tabuleiro no loop principal
+    desenhar_tabuleiro()
+    mostrar_placar()
     adicionar_botoes()
 
     for event in pygame.event.get():
@@ -198,7 +219,7 @@ while True:
                 clique_som.play()  # Reproduz som de clique
                 if verificar_vitoria('X'):
                     vitoria_som.play()  # Reproduz som de vitória
-                    vencedor = nome_jogador  # Nome do jogador Mickey Mouse
+                    vencedor = nome_jogador  
                     pontuacao_mickey += 1
                     jogo_rodando = False
                 elif verificar_empate():
@@ -212,18 +233,16 @@ while True:
     
     # Exibir status do jogo
     if jogo_rodando:
-        status_texto = STATUS_FONTE.render(f'Vez de: {"Mickey Mouse" if vez_do_jogador else "Minnie Mouse"}', True, (0, 0, 0))
+        status_texto = STATUS_FONTE.render(f'Vez de: {nome_jogador if vez_do_jogador else nome_ia}', True, (0, 0, 0))
         tela.blit(status_texto, (10, ALTURA - 30))
-        
 
     pygame.display.update()
-
     if not vez_do_jogador and jogo_rodando:
         jogada_ia()
         clique_som.play()  # Reproduz som de clique
         if verificar_vitoria('O'):
             vitoria_som.play()  # Reproduz som de vitória
-            vencedor = nome_ia  # Nome da Minnie Mouse
+            vencedor = nome_ia  # 
             pontuacao_minnie += 1
             jogo_rodando = False
         elif verificar_empate():
@@ -238,5 +257,5 @@ while True:
         texto_vitoria = VITORIA_FONTE.render(f'{vencedor} venceu!', True, (0, 255, 0))
         tela.blit(texto_vitoria, (LARGURA // 2 - texto_vitoria.get_width() // 2, ALTURA // 2 - texto_vitoria.get_height() // 2))
         pygame.display.update()
-        pygame.time.wait(2000)  # Espera 2 segundos antes de reiniciar
+        pygame.time.wait(4000)  # Espera 4 segundos antes de reiniciar
         reiniciar()
