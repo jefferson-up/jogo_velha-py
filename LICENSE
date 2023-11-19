@@ -1,0 +1,6 @@
+
+Certifique-se de substituir `[URL do seu repositório]` e `[Nome da pasta do repositório]` pelos valores reais uma vez que você tenha criado o repositório no GitHub.
+
+Você também deve criar um arquivo `LICENSE` no seu repositório com a licença MIT (ou outra que preferir) para que os termos de uso estejam claros para outros usuários.
+
+Copie e cole este texto em um arquivo chamado `README.md` na raiz do seu projeto. Quando você publicar o projeto no GitHub, o arquivo README será exibido na página principal do repositório.
